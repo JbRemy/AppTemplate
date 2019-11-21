@@ -4,6 +4,8 @@
 /* Declaration of a bar Chart */
 var mainChart = dc.lineChart('#line-chart');
 var zoomChart = dc.lineChart("#range");
+var pie = dc.pieChart("#pie-chart");
+
 
 /* loading data from a csv
  * The then function allows to define instruction when loading data */
@@ -14,6 +16,7 @@ d3.csv("/static/data/test_data.csv").then(function (data) {
     data.forEach(function (d) {
         d.date = dateFormatParser(d.date);
         d.day = d3.timeDay(d.date); // pre-calculate day for better performance
+        d.hastag = d.hashtags.split(" ")[0]; // only one hashtag is counted
     });
 
     // Run the data through crossfilter and load it
@@ -26,8 +29,9 @@ d3.csv("/static/data/test_data.csv").then(function (data) {
     // Grouping by dans and counting
     var dayGroup = dayValue.group();
 
+
     // Definition of the bar chart
-    mainChart.width(960)
+    mainChart.width(540)
         .height(300)
         .evadeDomainFilter(true)
         .x(d3.scaleTime().domain(d3.extent(data, function(d) { return d.day; })))
@@ -44,17 +48,31 @@ d3.csv("/static/data/test_data.csv").then(function (data) {
 
     // Defining the preview
     zoomChart
-        .width(960)
+        .width(540)
         .height(80)
-        .x(d3.scaleLinear().domain(d3.extent(data, function(d) { return d.day; })))
+        .x(d3.scaleTime().domain(d3.extent(data, function(d) { return d.day; })))
         .clipPadding(10)
         .brushOn(true)
         .yAxisLabel("")
         .dimension(dayValue)
         .group(dayGroup);
-    // Render the Charts
+
+    // Building the value to count hashtags
+    var hashValue = df.dimension(function (d) {
+        return d.hastag;
+    });
+    // Grouping by dans and counting
+    var hashGroup = hashValue.group().reduceCount();
+
+    pie 
+        .width(360)
+        .height(360)
+        .innerRadius(80)
+        .radius(150)
+        .dimension(hashValue)
+        .group(hashGroup);
+
     dc.renderAll();
-    // Redraw
-    // dc.redrawAll()
 
 });
+
