@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+    <head> 
+        <title>My APP !!</title>
+        <link rel="stylesheet" type="text/css" href="/static/css/bootstrap.min.css">
+        <link rel="stylesheet" type="text/css" href="/static/css/dc.css"/>
+        <link rel="stylesheet" type="text/css" href="/static/css/style.css"/>
+    </head>
+    <body>
+    <header>
+        <div class="container">
+            <h1 class="logo">Hackathon ENSAE 2k19 </h1>
+            <strong><nav>
+                    <ul class="menu">
+                        <li><a href="{{ url_for('home') }}">Home</a></li>
+                    </ul>
+                </nav></strong>
+        </div>
+    </header>
+    {% block content %}
+    {% endblock %}
+    </body>
+</html>
+

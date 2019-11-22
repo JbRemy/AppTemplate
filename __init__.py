@@ -8,7 +8,7 @@ from flask import render_template
 app = Flask(__name__)
 
 @app.route("/")
-def index():
+def home():
     """
     This function is the core of the app
     Here we uses the render_template function of flask that will automatically
@@ -20,7 +20,11 @@ def index():
         /templates
             /hello.html
     """
-    return render_template("index.html")
+    return render_template("home.html")
+
+@app.route("/template")
+def template_app():
+    return render_template("template_app.html")
 
 if __name__ == "__main__":
     """

@@ -11,12 +11,11 @@ var pie = dc.pieChart("#pie-chart");
  * The then function allows to define instruction when loading data */
 d3.csv("/static/data/test_data.csv").then(function (data) {
 
-    var dateFormatParser = d3.timeParse("%Y-%m-%d");
+    var dateFormatParser = d3.timeParse("%Y-%m-%d %H:%M:%S");
 
     data.forEach(function (d) {
         d.date = dateFormatParser(d.date);
         d.day = d3.timeDay(d.date); // pre-calculate day for better performance
-        d.hastag = d.hashtags.split(" ")[0]; // only one hashtag is counted
     });
 
     // Run the data through crossfilter and load it
@@ -27,12 +26,18 @@ d3.csv("/static/data/test_data.csv").then(function (data) {
         return d.day;
     });
     // Grouping by dans and counting
-    var dayGroup = dayValue.group();
+    var dayGroup = dayValue.group().reduceSum( function(d) {
+        if (d.duplicate == "False") {
+            return 1;
+        } else {
+            return 0;
+        }
+    });
 
 
     // Definition of the bar chart
     mainChart.width(540)
-        .height(300)
+        .height(400)
         .evadeDomainFilter(true)
         .x(d3.scaleTime().domain(d3.extent(data, function(d) { return d.day; })))
         .xUnits(d3.timeDays)
@@ -59,10 +64,16 @@ d3.csv("/static/data/test_data.csv").then(function (data) {
 
     // Building the value to count hashtags
     var hashValue = df.dimension(function (d) {
-        return d.hastag;
+        return d.hashtag;
     });
     // Grouping by dans and counting
-    var hashGroup = hashValue.group().reduceCount();
+    var hashGroup = hashValue.group().reduceSum( function(d) {
+        if (d.hashtag == ""){
+            return 0;
+        } else {
+            return 1;
+        }
+    });
 
     pie 
         .width(360)
@@ -70,7 +81,12 @@ d3.csv("/static/data/test_data.csv").then(function (data) {
         .innerRadius(80)
         .radius(150)
         .dimension(hashValue)
-        .group(hashGroup);
+        .group(hashGroup)
+        .on('pretransition', function(chart) {
+            chart.selectAll('text.pie-slice').text(function(d) {
+                return d.data.key + ' ' + dc.utils.printSingleValue((d.endAngle - d.startAngle) / (2*Math.PI) * 100) + '%';
+            })
+        });
 
     dc.renderAll();
 
